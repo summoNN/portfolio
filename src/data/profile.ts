@@ -1,0 +1,38 @@
+export const profile = {
+  name: 'Ilyas Haddad',
+  title: 'Frontend Software Engineer',
+  location: 'Milan, Italy',
+  email: 'haddadilyas02@gmail.com',
+  phone: '+39 3515776327',
+  bio: 'Software engineer based in Milan with strong expertise in modern Frontend development (Vue.js, Nuxt 2/3, TypeScript, React) and Full-stack cloud engineering (Java, Spring Boot, REST APIs). Passionate about high-performance web applications, clean architecture, and intuitive user experiences.',
+  currentFocus: 'Building production-grade web applications with modern frameworks & cloud tech',
+  education: {
+    institution: 'ITS Talent Tech Factory',
+    degree: 'Fullstack Engineer with Cloud Technologies',
+    date: 'May 2023',
+    location: 'Milan',
+    grade: '91/100 (GPA 4.0 Incred Evaluation)',
+    coursework: [
+      'Software Engineering Practice',
+      'Fullstack Web Development',
+      'Cloud Computing',
+      'Distributed Systems',
+      'Applied Machine Learning',
+      'Algorithms and Data Structures',
+    ],
+  },
+  interests: [
+    'Frontend Architecture',
+    'Vue & Nuxt Ecosystem',
+    'Fullstack Engineering',
+    'Cloud Computing',
+    'Video & Content Production',
+    'UI/UX Design',
+  ],
+  spokenLanguages: [
+    { language: 'Italian', level: 'Native' },
+    { language: 'English', level: 'B2/C1' },
+    { language: 'French', level: 'A2' },
+  ],
+  avatar: '/avatar.jpg',
+} as const;
