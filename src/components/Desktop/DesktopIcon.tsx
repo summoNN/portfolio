@@ -22,7 +22,7 @@ interface DesktopIconProps {
 }
 
 const DRAG_THRESHOLD = 5; // Pixels of movement before initiating drag
-const DOUBLE_CLICK_DELAY = 350; // Milliseconds for double click detection
+
 
 export function DesktopIcon({
   app,
@@ -47,7 +47,7 @@ export function DesktopIcon({
   const latestPosRef = useRef<IconPosition>({ x: 0, y: 0 });
   const isPointerDownRef = useRef(false);
   const hasExceededThresholdRef = useRef(false);
-  const lastClickTimeRef = useRef(0);
+
 
   // Synchronize with external position changes when not dragging
   useEffect(() => {
@@ -116,18 +116,9 @@ export function DesktopIcon({
         setIsDragging(false);
         onDragEnd?.(latestPosRef.current);
       } else {
-        // Not dragged: distinguish single click vs double click
+        // Not dragged: single click -> open application
         setIsDragging(false);
-        const now = Date.now();
-        if (now - lastClickTimeRef.current < DOUBLE_CLICK_DELAY) {
-          // Double click -> open application
-          lastClickTimeRef.current = 0;
-          onOpen?.();
-        } else {
-          // Single click -> select icon
-          lastClickTimeRef.current = now;
-          onSelect?.();
-        }
+        onOpen?.();
       }
     };
 
@@ -139,82 +130,121 @@ export function DesktopIcon({
   // Static mode (for responsive fallback grid)
   const handleStaticClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const now = Date.now();
-    if (now - lastClickTimeRef.current < DOUBLE_CLICK_DELAY) {
-      lastClickTimeRef.current = 0;
-      onOpen?.();
-    } else {
-      lastClickTimeRef.current = now;
-      onSelect?.();
-    }
+    onOpen?.();
   };
 
   const iconContent = (
-    <div
-      className="flex flex-col items-center gap-1.5 cursor-pointer select-none group w-24 sm:w-28 touch-none"
+    <motion.div
+      className="flex flex-col items-center gap-2 cursor-pointer select-none touch-none"
+      style={{ width: 88 }}
       onClick={isStatic ? handleStaticClick : undefined}
+      whileHover={
+        !isDragging
+          ? { scale: 1.08, y: -4, transition: { type: 'spring', stiffness: 420, damping: 22 } }
+          : undefined
+      }
+      whileTap={!isDragging ? { scale: 0.96 } : undefined}
     >
-      {/* Floating Card / Preview container with subtle monochrome glass aesthetic */}
+      {/* ── Liquid Glass Icon Body ── */}
       <div
-        className={`relative w-16 h-12 sm:w-20 sm:h-14 rounded-xl flex items-center justify-center overflow-hidden transition-all duration-200 ${
-          isSelected
-            ? 'ring-1 ring-white/50 shadow-[0_0_22px_rgba(255,255,255,0.22),0_10px_25px_rgba(0,0,0,0.7)] bg-white/20'
-            : 'bg-black/40 hover:bg-white/10 glass-card shadow-lg hover:shadow-2xl border border-white/5'
+        className={`relative flex items-center justify-center overflow-hidden transition-all duration-200 ${
+          isSelected ? 'liquid-glass-icon-selected' : 'liquid-glass-icon'
         }`}
+        style={{
+          width: 72,
+          height: 72,
+          borderRadius: 18,
+        }}
       >
+        {/* App-color tint layer — subtle colored wash behind glass */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse at 40% 35%, ${app.color}2e 0%, transparent 70%)`,
+          }}
+        />
+
+        {/* Main icon — centered Lucide SVG */}
         {previewImage ? (
           <img
             src={previewImage}
             alt={app.label}
-            className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity pointer-events-none"
+            className="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-opacity pointer-events-none"
           />
         ) : (
-          <div
-            className="w-full h-full flex items-center justify-center transition-colors"
-            style={{
-              background: isSelected
-                ? 'radial-gradient(circle at center, rgba(255,255,255,0.22) 0%, rgba(20,20,20,0.7) 100%)'
-                : `radial-gradient(circle at center, ${app.color}33 0%, rgba(0,0,0,0.6) 100%)`,
-            }}
-          >
-            <Icon
-              size={24}
-              strokeWidth={1.8}
-              className={`transition-all ${
-                isSelected
-                  ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]'
-                  : 'text-white/80 group-hover:text-white'
-              }`}
-            />
-          </div>
+          <Icon
+            size={30}
+            strokeWidth={1.6}
+            className={`relative z-10 transition-all duration-200 ${
+              isSelected
+                ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.75)]'
+                : 'text-white/85'
+            }`}
+          />
         )}
 
-        {/* Subtle glass reflection highlight */}
-        <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
+        {/* Top specular highlight — primary reflection strip */}
+        <div
+          className="absolute inset-x-0 top-0 pointer-events-none"
+          style={{
+            height: '48%',
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.10) 55%, transparent 100%)',
+            borderRadius: '18px 18px 40% 40%',
+          }}
+        />
+
+        {/* Left rim light */}
+        <div
+          className="absolute inset-y-0 left-0 w-px pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.06) 60%, transparent 100%)',
+          }}
+        />
+
+        {/* Bottom inner shadow — depth */}
+        <div
+          className="absolute inset-x-0 bottom-0 pointer-events-none"
+          style={{
+            height: '30%',
+            background:
+              'linear-gradient(0deg, rgba(0,0,0,0.18) 0%, transparent 100%)',
+          }}
+        />
       </div>
 
-      {/* Label or Active Badge */}
+      {/* ── Label / Badge ── */}
       {isSelected && badgeLabel ? (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: -2 }}
+          initial={{ opacity: 0, scale: 0.88, y: -3 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/25 text-white text-[11px] font-semibold tracking-tight shadow-md flex items-center gap-1"
+          className="px-2.5 py-0.5 rounded-full border text-[11px] font-semibold tracking-tight shadow-md flex items-center gap-1 pointer-events-none"
+          style={{
+            background: 'rgba(255,255,255,0.18)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderColor: 'rgba(255,255,255,0.30)',
+            color: 'rgba(255,255,255,0.95)',
+            textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+          }}
         >
           <span>{badgeLabel}</span>
         </motion.div>
       ) : (
         <span
-          className={`text-[11px] sm:text-[12px] font-medium tracking-tight text-center leading-tight transition-all drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] ${
-            isSelected
-              ? 'text-white bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-md border border-white/25 shadow-sm'
-              : 'text-white/80 group-hover:text-white'
-          }`}
+          className="text-[11px] font-medium tracking-tight text-center leading-tight pointer-events-none"
+          style={{
+            color: isSelected ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.80)',
+            textShadow: '0 1px 4px rgba(0,0,0,0.75)',
+          }}
         >
           {app.label}
         </span>
       )}
-    </div>
+    </motion.div>
   );
+
 
   // If in static mode (mobile grid)
   if (isStatic || !position) {

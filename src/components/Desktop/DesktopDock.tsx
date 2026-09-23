@@ -24,7 +24,7 @@ export function DesktopDock({
   return (
     <div className="fixed bottom-4 left-0 right-0 flex justify-center z-[900] pointer-events-none select-none">
       <motion.nav
-        className="pointer-events-auto flex items-end gap-2 px-3.5 py-2.5 rounded-2xl glass-panel shadow-2xl border border-white/10 backdrop-blur-2xl"
+        className="pointer-events-auto relative flex items-end gap-3 px-4 py-3 rounded-[22px] liquid-glass-dock"
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 260, damping: 24, delay: 0.2 }}
@@ -32,6 +32,15 @@ export function DesktopDock({
         role="toolbar"
         aria-label="Application Dock"
       >
+        {/* Inner top highlight strip */}
+        <div
+          className="absolute inset-x-0 top-0 h-px pointer-events-none rounded-t-[22px]"
+          style={{
+            background:
+              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.50) 30%, rgba(255,255,255,0.50) 70%, transparent 100%)',
+          }}
+        />
+
         {dockApps.map((app) => {
           const appWindow = windows.find((w) => w.appId === app.id);
           const isOpen = Boolean(appWindow);
@@ -62,27 +71,49 @@ export function DesktopDock({
               <motion.button
                 onClick={() => onAppClick(app.id)}
                 onMouseEnter={() => setHoveredId(app.id)}
-                className="relative rounded-xl flex items-center justify-center p-2.5 cursor-pointer outline-none border-none transition-shadow"
+                className="relative rounded-[16px] flex items-center justify-center cursor-pointer outline-none border-none liquid-glass-dock-icon overflow-hidden"
                 style={{
-                  width: 48,
-                  height: 48,
-                  background: `linear-gradient(135deg, ${app.color} 0%, rgba(20,20,22,0.9) 100%)`,
-                  boxShadow: isActive
-                    ? '0 0 14px rgba(255,255,255,0.4), inset 0 1px 0 rgba(255,255,255,0.3)'
-                    : '0 4px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  width: 52,
+                  height: 52,
                 }}
                 whileHover={{
-                  scale: 1.25,
-                  y: -6,
-                  transition: { type: 'spring', stiffness: 400, damping: 20 },
+                  scale: 1.30,
+                  y: -8,
+                  transition: { type: 'spring', stiffness: 400, damping: 18 },
                 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.94 }}
                 aria-label={app.label}
               >
-                <Icon size={23} strokeWidth={1.8} className="text-white/90" />
+                {/* Per-app color tint */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: `radial-gradient(ellipse at 45% 40%, ${app.color}30 0%, transparent 65%)`,
+                  }}
+                />
 
-                {/* Subtle top reflection */}
-                <div className="absolute top-0 left-1 right-1 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-lg pointer-events-none" />
+                {/* Active state glow ring */}
+                {isActive && (
+                  <div
+                    className="absolute inset-0 rounded-[16px] pointer-events-none"
+                    style={{
+                      boxShadow: 'inset 0 0 0 1.5px rgba(255,255,255,0.55), 0 0 16px rgba(255,255,255,0.22)',
+                    }}
+                  />
+                )}
+
+                <Icon size={24} strokeWidth={1.7} className="relative z-10 text-white/92" />
+
+                {/* Top specular reflection */}
+                <div
+                  className="absolute inset-x-0 top-0 pointer-events-none"
+                  style={{
+                    height: '45%',
+                    background:
+                      'linear-gradient(180deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.08) 55%, transparent 100%)',
+                    borderRadius: '16px 16px 40% 40%',
+                  }}
+                />
               </motion.button>
 
               {/* Running App Dot Indicator */}
